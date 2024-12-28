@@ -15,12 +15,13 @@ app.post('/search-flights', async (req, res) => {
     });
   }
 
-  // Converter a data para o formato DD-MM-YYYY
-  const formattedDate = departureDate.split('/').join('-');
+  // Converter a data para o formato YYYY/MM/DD
+  const [day, month, year] = departureDate.split('/');
+  const formattedDate = `${year}-${month}-${day}`;
 
   try {
     const results = await scrapeFlights({ origin, destination, departureDate: formattedDate });
-    
+
     // Retornar o JSON com os dados formatados
     return res.json({
       client,
