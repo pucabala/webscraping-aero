@@ -88,6 +88,19 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     await page.click('button#submitSearch');
     await delay(3000);
 
+    // Verificar se há alerta de nenhum resultado
+    const alertSelector = '.alert.alert-warning';
+    const alertExists = await page.$(alertSelector);
+    if (alertExists) {
+      const alertMessage = await page.evaluate(
+        (alert) => alert.textContent.trim(),
+        alertExists
+      );
+      console.log(`Alerta encontrado: ${alertMessage}`);
+      return { error: alertMessage };
+    }
+    
+
     // Validar e clicar no botão "Econômica"
     console.log('Tentando clicar no botão "Econômica"...');
     const economySelector = 'th[aria-label*="Economy"] span';
