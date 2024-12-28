@@ -6,16 +6,28 @@ app.use(express.json());
 
 // Endpoint para buscar passagens
 app.post('/search-flights', async (req, res) => {
-  const { origin, destination, departureDate } = req.body;
+  const { client, number, textMessage, origin, destination, departureDate } = req.body;
 
   // Validação básica dos dados recebidos
-  if (!origin || !destination || !departureDate) {
-    return res.status(400).json({ error: 'Os campos origin, destination e departureDate são obrigatórios.' });
+  if (!client || !number || !textMessage || !origin || !destination || !departureDate) {
+    return res.status(400).json({
+      error: 'Os campos client, number, textMessage, origin, destination e departureDate são obrigatórios.',
+    });
   }
 
+  // Converter a data para o formato DD-MM-YYYY
+  const formattedDate = departureDate.split('/').join('-');
+
   try {
-    const results = await scrapeFlights({ origin, destination, departureDate });
-    return res.json({ results });
+    const results = await scrapeFlights({ origin, destination, departureDate: formattedDate });
+    
+    // Retornar o JSON com os dados formatados
+    return res.json({
+      client,
+      number,
+      textMessage,
+      result: results,
+    });
   } catch (error) {
     console.error('Erro durante a execução do endpoint:', error);
     return res.status(500).json({ error: 'Erro durante o scraping. Tente novamente mais tarde.' });
