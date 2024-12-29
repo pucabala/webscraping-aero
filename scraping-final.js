@@ -89,7 +89,7 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     await delay(3000);
 
     // Verificar se há alerta de nenhum resultado
-    const alertSelector = '.alert';
+    const alertSelector = '.alert.alert-warning';
     const alertExists = await page.$(alertSelector);
     if (alertExists) {
       const alertMessage = await page.evaluate(
