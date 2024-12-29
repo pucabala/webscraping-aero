@@ -110,7 +110,7 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
       const linkSelector = '#bookingOptions a.dropdown-item';
       await page.waitForSelector(linkSelector, { timeout: 20000 });
       const links = await page.$$eval(linkSelector, (elements) =>
-        elements.map((el) => `Texto: ${el.textContent.trim()}, Link: ${el.href}`).join('\n')
+        elements.map((el) => `Texto: ${el.textContent.trim()}, Link: ${el.href}  `).join('\n  ')
       );
 
       console.log('Links extraídos com sucesso.');

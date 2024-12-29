@@ -15,19 +15,19 @@ app.post('/search-flights', async (req, res) => {
     });
   }
 
-  // Converter a data para o formato YYYY/MM/DD
+  // Converter a data para o formato YYYY-MM-DD
   const [day, month, year] = departureDate.split('/');
   const formattedDate = `${year}-${month}-${day}`;
 
   try {
-    const results = await scrapeFlights({ origin, destination, departureDate: formattedDate });
+    const result = await scrapeFlights({ origin, destination, departureDate: formattedDate });
 
-    // Retornar o JSON com os dados formatados
+    // Retornar o texto diretamente no campo "results"
     return res.json({
       client,
       number,
       textMessage,
-      result: results,
+      results: result.result, // Acessa diretamente o texto do retorno
     });
   } catch (error) {
     console.error('Erro durante a execução do endpoint:', error);
