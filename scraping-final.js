@@ -6,7 +6,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const scrapeFlights = async ({ origin, destination, departureDate }) => {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     defaultViewport: null,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
