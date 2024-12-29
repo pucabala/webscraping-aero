@@ -14,16 +14,13 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
   const page = await browser.newPage();
 
   try {
-    // Navegar para o site
     console.log('Acessando o site...');
     await page.goto('https://seats.aero/search', { waitUntil: 'networkidle2' });
 
-    // Simular movimento do mouse para evitar detecção de bot
     console.log('Simulando comportamento humano...');
     await page.mouse.move(100, 100);
     await delay(6000);
 
-    // Verificar e resolver captcha, se necessário
     const captchaSelector = 'p#TBuuD2.h2.spacer-bottom';
     const captchaExists = await page.$(captchaSelector);
     if (captchaExists) {
@@ -32,10 +29,9 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
       await page.waitForSelector(checkboxSelector, { timeout: 10000 });
       await page.click(checkboxSelector);
       console.log('Captcha resolvido com sucesso.');
-      await delay(5000); // Aguardar para garantir que o captcha foi resolvido
+      await delay(5000);
     }
 
-    // Preencher origem
     console.log('Preenchendo campo de origem...');
     await page.waitForSelector('input.vs__search[aria-labelledby="vs1__combobox"]');
     await page.click('input.vs__search[aria-labelledby="vs1__combobox"]');
@@ -44,7 +40,6 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     await page.keyboard.press('Enter');
     await delay(2000);
 
-    // Preencher destino
     console.log('Preenchendo campo de destino...');
     await page.waitForSelector('input.vs__search[aria-labelledby="vs2__combobox"]');
     await page.click('input.vs__search[aria-labelledby="vs2__combobox"]');
@@ -53,7 +48,6 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     await page.keyboard.press('Enter');
     await delay(2000);
 
-    // Selecionar data
     console.log('Selecionando data...');
     const [year, month, day] = departureDate.split('-');
     await page.waitForSelector('input[data-test-id="dp-input"]');
@@ -83,25 +77,18 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     }
     await delay(2000);
 
-    // Clicar no botão de busca
     console.log('Clicando no botão "Buscar"...');
     await page.click('button#submitSearch');
     await delay(3000);
 
-    // Verificar se há alerta de nenhum resultado
     const alertSelector = '.alert.alert-warning';
     const alertExists = await page.$(alertSelector);
     if (alertExists) {
-      const alertMessage = await page.evaluate(
-        (alert) => alert.textContent.trim(),
-        alertExists
-      );
+      const alertMessage = await page.evaluate((alert) => alert.textContent.trim(), alertExists);
       console.log(`Alerta encontrado: ${alertMessage}`);
-      return { error: alertMessage };
+      return { result: alertMessage };
     }
-    
 
-    // Validar e clicar no botão "Econômica"
     console.log('Tentando clicar no botão "Econômica"...');
     const economySelector = 'th[aria-label*="Economy"] span';
     await page.waitForSelector(economySelector, { timeout: 15000 });
@@ -109,7 +96,6 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     console.log('Botão "Econômica" clicado.');
     await delay(2000);
 
-    // Clicar no botão de mais informações
     console.log('Clicando no botão de mais informações...');
     const infoButtonSelector = 'button.open-modal-btn';
     await page.waitForSelector(infoButtonSelector, { timeout: 20000 });
@@ -118,31 +104,23 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     if (infoButtons.length > 0) {
       await infoButtons[0].click();
       console.log('Botão de mais informações clicado.');
-      await delay(5000); // Aguardar carregamento do pop-up
+      await delay(5000);
 
-      // Capturar os links do dropdown
       console.log('Extraindo links do pop-up...');
       const linkSelector = '#bookingOptions a.dropdown-item';
       await page.waitForSelector(linkSelector, { timeout: 20000 });
       const links = await page.$$eval(linkSelector, (elements) =>
-        elements.map((el) => ({
-          text: el.textContent.trim(),
-          url: el.href,
-        }))
+        elements.map((el) => `Texto: ${el.textContent.trim()}, Link: ${el.href}`).join('\n')
       );
 
-      console.log('Links extraídos com sucesso:', links);
-      return links;
+      console.log('Links extraídos com sucesso.');
+      return { result: links };
     } else {
       console.error('Nenhum botão de mais informações encontrado.');
+      return { result: 'Nenhum link de reserva encontrado.' };
     }
   } catch (error) {
     console.error('Erro durante o scraping:', error);
-
-    // Capturar captura de tela para depuração
-    await page.screenshot({ path: 'error-screenshot.png', fullPage: true });
-    console.log('Captura de tela salva como error-screenshot.png.');
-
     throw error;
   } finally {
     console.log('Fechando o navegador...');
