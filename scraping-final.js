@@ -6,16 +6,22 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const scrapeFlights = async ({ origin, destination, departureDate }) => {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false, // Desative o modo headless para depuração
     defaultViewport: null,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
   const page = await browser.newPage();
 
+  // Capture e registre erros de console
+  page.on('console', (msg) => {
+    for (let i = 0; i < msg.args().length; ++i)
+      console.log(`${msg.text()}`);
+  });
+
   try {
     console.log('Acessando o site...');
-    await page.goto('https://seats.aero/search', { waitUntil: 'networkidle2' });
+    await page.goto('https://seats.aero/search', { waitUntil: 'networkidle0' });
 
     console.log('Simulando comportamento humano...');
     await page.mouse.move(100, 100);
@@ -34,7 +40,7 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
 
     console.log('Preenchendo campo de origem...');
     const originSelector = 'input.vs__search[aria-labelledby="vs1__combobox"]';
-    await page.waitForSelector(originSelector);
+    await page.waitForSelector(originSelector, { timeout: 30000 }); // Aumente o tempo de espera
     const originInput = await page.$(originSelector);
     if (originInput) {
       console.log('Campo de origem encontrado.');
@@ -49,7 +55,7 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
 
     console.log('Preenchendo campo de destino...');
     const destinationSelector = 'input.vs__search[aria-labelledby="vs2__combobox"]';
-    await page.waitForSelector(destinationSelector);
+    await page.waitForSelector(destinationSelector, { timeout: 30000 }); // Aumente o tempo de espera
     const destinationInput = await page.$(destinationSelector);
     if (destinationInput) {
       console.log('Campo de destino encontrado.');
@@ -64,7 +70,7 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
 
     console.log('Selecionando data...');
     const [year, month, day] = departureDate.split('-');
-    await page.waitForSelector('input[data-test-id="dp-input"]');
+    await page.waitForSelector('input[data-test-id="dp-input"]', { timeout: 30000 }); // Aumente o tempo de espera
     await page.click('input[data-test-id="dp-input"]');
     await delay(1000);
 
