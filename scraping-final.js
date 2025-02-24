@@ -45,7 +45,7 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     if (originInput) {
       console.log('Campo de origem encontrado.');
     } else {
-      console.error('Campo de origem não encontrado.');
+      throw new Error('Campo de origem não encontrado.');
     }
     await page.click(originSelector);
     for (const char of origin) await page.keyboard.type(char, { delay: 200 });
@@ -60,7 +60,7 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     if (destinationInput) {
       console.log('Campo de destino encontrado.');
     } else {
-      console.error('Campo de destino não encontrado.');
+      throw new Error('Campo de destino não encontrado.');
     }
     await page.click(destinationSelector);
     for (const char of destination) await page.keyboard.type(char, { delay: 200 });
@@ -87,13 +87,18 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
 
     const daySelector = `div.dp__cell_inner.dp__pointer`;
     const days = await page.$$(daySelector);
+    let dayFound = false;
     for (const element of days) {
       const text = await page.evaluate((el) => el.textContent.trim(), element);
       if (text === day) {
         await element.click();
         console.log(`Dia ${day} selecionado com sucesso.`);
+        dayFound = true;
         break;
       }
+    }
+    if (!dayFound) {
+      throw new Error(`Dia ${day} não encontrado no calendário.`);
     }
     await delay(2000);
 
@@ -136,8 +141,7 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
       console.log('Links extraídos com sucesso.');
       return { result: links };
     } else {
-      console.error('Nenhum botão de mais informações encontrado.');
-      return { result: 'Nenhum link de reserva encontrado.' };
+      throw new Error('Nenhum botão de mais informações encontrado.');
     }
   } catch (error) {
     console.error('Erro durante o scraping:', error);
