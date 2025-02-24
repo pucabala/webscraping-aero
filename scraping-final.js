@@ -1,11 +1,11 @@
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-puppeteer.use(StealthPlugin());
+import { use, launch } from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+use(StealthPlugin());
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const scrapeFlights = async ({ origin, destination, departureDate }) => {
-  const browser = await puppeteer.launch({
+  const browser = await launch({
     headless: true,
     defaultViewport: null,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -128,4 +128,4 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
   }
 };
 
-module.exports = { scrapeFlights };
+export default { scrapeFlights };
