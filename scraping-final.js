@@ -32,43 +32,54 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
       await delay(5000);
     }
 
+    // Preenchendo o campo de origem
     console.log('Preenchendo campo de origem...');
-    await page.waitForSelector('input.vs__search[aria-labelledby="vs1__combobox"]');
-    await page.click('input.vs__search[aria-labelledby="vs1__combobox"]');
-    for (const char of origin) await page.keyboard.type(char, { delay: 200 });
+    // Ajustando o seletor para acessar o input dentro do container com id vs1__combobox
+    await page.waitForSelector('#vs1__combobox input.vs__search');
+    await page.click('#vs1__combobox input.vs__search');
+    for (const char of origin) {
+      await page.keyboard.type(char, { delay: 200 });
+    }
     await delay(1500);
     await page.keyboard.press('Enter');
     await delay(2000);
 
+    // Preenchendo o campo de destino
     console.log('Preenchendo campo de destino...');
-    await page.waitForSelector('input.vs__search[aria-labelledby="vs2__combobox"]');
-    await page.click('input.vs__search[aria-labelledby="vs2__combobox"]');
-    for (const char of destination) await page.keyboard.type(char, { delay: 200 });
+    await page.waitForSelector('#vs2__combobox input.vs__search');
+    await page.click('#vs2__combobox input.vs__search');
+    for (const char of destination) {
+      await page.keyboard.type(char, { delay: 200 });
+    }
     await delay(1500);
     await page.keyboard.press('Enter');
     await delay(2000);
 
+    // Selecionando a data de partida
     console.log('Selecionando data...');
     const [year, month, day] = departureDate.split('-');
     await page.waitForSelector('input[data-test-id="dp-input"]');
     await page.click('input[data-test-id="dp-input"]');
     await delay(1000);
 
+    // Seleciona o ano
     await page.click('button[data-dp-element="overlay-year"]');
     await delay(500);
     await page.click(`div[data-test-id="${year}"]`);
     await delay(1000);
 
+    // Seleciona o mês
     await page.click('button[data-dp-element="overlay-month"]');
     await delay(500);
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     await page.click(`div[data-test-id="${monthNames[parseInt(month, 10) - 1]}"]`);
     await delay(1000);
 
-    const daySelector = `div.dp__cell_inner.dp__pointer`;
+    // Seleciona o dia
+    const daySelector = 'div.dp__cell_inner.dp__pointer';
     const days = await page.$$(daySelector);
     for (const element of days) {
-      const text = await page.evaluate((el) => el.textContent.trim(), element);
+      const text = await page.evaluate(el => el.textContent.trim(), element);
       if (text === day) {
         await element.click();
         console.log(`Dia ${day} selecionado com sucesso.`);
@@ -84,7 +95,7 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
     const alertSelector = '.alert.alert-warning';
     const alertExists = await page.$(alertSelector);
     if (alertExists) {
-      const alertMessage = await page.evaluate((alert) => alert.textContent.trim(), alertExists);
+      const alertMessage = await page.evaluate(alert => alert.textContent.trim(), alertExists);
       console.log(`Alerta encontrado: ${alertMessage}`);
       return { result: alertMessage };
     }
@@ -109,8 +120,8 @@ const scrapeFlights = async ({ origin, destination, departureDate }) => {
       console.log('Extraindo links do pop-up...');
       const linkSelector = '#bookingOptions a.dropdown-item';
       await page.waitForSelector(linkSelector, { timeout: 20000 });
-      const links = await page.$$eval(linkSelector, (elements) =>
-        elements.map((el) => `${el.textContent.trim()}, Link:${el.href}`)
+      const links = await page.$$eval(linkSelector, elements =>
+        elements.map(el => `Text: ${el.textContent.trim()}, Link: ${el.href}`)
       );
 
       console.log('Links extraídos com sucesso.');
